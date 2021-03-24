@@ -55,5 +55,3 @@ squares_list(N, Col, L):-
     N1 is N - 1,
     squares_list(N1, Col, R),
     L = [Col | R].
-
-
