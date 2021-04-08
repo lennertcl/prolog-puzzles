@@ -11,7 +11,7 @@
 
 
 % The game grid
-grid(10, 10).
+grid(5, 5).
 % The chance that a square is a bomb
 bomb_odds(0.2).
 
@@ -41,7 +41,7 @@ write_board([pos(Row, Col, Elem) | Positions], _):-
 write_instructions():-
     write("Minesweeper game"), nl,
     write("Instructions: "), nl,
-    write("Enter a move like this 'pos(Row, Col, Move).', where Move is either f to Flag or r to reveal"), nl,
+    write("Enter a move like this 'pos(Row, Col, Move).', where Move is either f to flag or r to reveal"), nl,
     write("Flags can be removed by revealing the flagged square"), nl.
 
 /**
@@ -141,33 +141,56 @@ play_game():-
     play_game(Board, Playboard).
 play_game(Board, Playboard):-
     write_board(Playboard),
-    write("Enter a move: "),
     make_move(Board, Playboard),
     % Test whether the game is done and exit or continue
     (is_finished(Board, Playboard)
     -> write_board(Board), nl, write("Thank you for playing")
     ; play_game(Board, Playboard)).
 
-
 /**
  * Make a move on the playboard based on the real board
  */
-% TODO
-% When revealing a zero, recursively reveal all neighbors
-% When revealing a position, test whether it was flagged before
-% (Flagged positions can still be revealed)
 make_move(Board, Playboard):-
     read(pos(X, Y, A)),
     (A == r
-    % Reveal pos(X, Y, E) -> init this as member of playboard
-    -> member(pos(X, Y, E), Board), member(pos(X, Y, E), Playboard)
-    % Flag pos(X, Y, _) -> init this as member of playboard
-    ; member(pos(X, Y, f), Playboard)),
-    !.
+    -> !, reveal(X-Y, Board, Playboard)
+    % Flag pos(X, Y, _) -> init pos(X, Y, f) as member of playboard
+    ; member(pos(X, Y, f), Playboard)).
 make_move(Board, Playboard):-
     write("Invalid move"), nl,
     make_move(Board, Playboard).
 
+/**
+ * Reveal position X, Y
+ * When a zero is revealed, all neighbors are revealed as well
+ * A flagged position will also be revealed
+ */
+reveal(X-Y, Board, Playboard):-
+    reveal([X-Y], Board, Playboard, []).
+reveal([], _, _, _).
+reveal([X-Y| Rest], Board, Playboard, Revealed):-
+    % Only reveal neighbors that have not been revealed yet
+    member(X-Y, Revealed),
+    reveal(Rest, Board, Playboard, Revealed),
+    !.
+reveal([X-Y| Rest], Board, Playboard, Revealed):-
+    % When the position was flagged before, it should still
+    % be revealed
+    select(pos(X, Y, E), Playboard, Playboard2),
+    E == f,
+    Playboard3 = [pos(X, Y, _) | Playboard2],
+    reveal([X-Y| Rest], Board, Playboard3, Revealed),
+    !.
+reveal([X-Y| Rest], Board, Playboard, Revealed):-
+    % Reveal pos(X, Y, E) -> init this as member of playboard
+    member(pos(X, Y, E), Board), member(pos(X, Y, E), Playboard),
+    NewRevealed = [X-Y| Revealed],
+    % Also reveal neighbors when 0
+    (E == 0
+    -> findall(A-B, (neighbors(pos(X, Y, _), pos(A, B, _), Playboard)), Neighbors),
+        append(Rest, Neighbors, NewRest),
+        reveal(NewRest, Board, Playboard, NewRevealed)
+    ; reveal(Rest, Board, Playboard, NewRevealed)).
 
 /**
  * Test whether a game is finished: The game is a win or a loss
