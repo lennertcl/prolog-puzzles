@@ -1,17 +1,11 @@
 % Minesweeper game
 
-% Puzzle:
-% Flag the bombs and determine how many are are around position (vertical, horizontal, diagonal)
-
-% Solution:
-% If the value of a square is n, there must exactly n bombs in its neighbors
-
 
 % Definition of a game
 
 
 % The game grid
-grid(5, 5).
+grid(10, 10).
 % The chance that a square is a bomb
 bomb_odds(0.2).
 
@@ -22,14 +16,15 @@ bomb_odds(0.2).
 /**
  * Print a visual representation of the board
  */
-% TODO
-% Write non unified variables as _
 write_board(Board):-
     write_board(Board, 1).
 write_board([], _):- nl.
 write_board([pos(Row, _, Elem) | Positions], Row):-
     !,
-    write("|"), write(Elem), write("|"),
+    write("|"), 
+    % Write non unified variables as _
+    (var(Elem) -> write("_"); write(Elem)),
+    write("|"),
     write_board(Positions, Row).
 write_board([pos(Row, Col, Elem) | Positions], _):-
     nl,
