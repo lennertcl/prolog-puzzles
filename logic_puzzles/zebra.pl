@@ -1,5 +1,7 @@
 % Zebra
 
+% Source: https://en.wikipedia.org/wiki/Zebra_Puzzle
+
 %There are five houses.
 %The Englishman lives in the red house.
 %The Spaniard owns the dog.

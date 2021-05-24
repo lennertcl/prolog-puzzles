@@ -1,5 +1,7 @@
 % N queens
 
+% Source: https://en.wikipedia.org/wiki/Eight_queens_puzzle
+
 % Solution:
 % List of numbers denoting position of queen in row
 % [2, 4, 3, 1] means queens are on positions
