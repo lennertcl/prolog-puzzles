@@ -56,3 +56,108 @@ construct([], T, T).
 construct([X|R], T, NNT):-
     add(X, T, NT),
     construct(R, NT, NNT).
+
+/**
+ * Count the nodes of a binary tree
+ */
+count_nodes(nil, 0).
+count_nodes(t(_, L, R), N):-
+    count_nodes(L, NL),
+    count_nodes(R, NR),
+    N is NL + NR + 1.
+
+/**
+ * Count the leaves of a binary tree
+ */
+count_leaves(nil, 0).
+count_leaves(t(_, nil, nil), 1):-!.
+count_leaves(t(_, L, R), N):-
+    count_leaves(L, NL),
+    count_leaves(R, NR),
+    N is NL + NR.
+
+/**
+ * Collect the leaves of a binary tree
+ */
+leaves(nil, []).
+leaves(t(X, nil, nil), [X]):-!.
+leaves(t(_, L, R), LT):-
+    leaves(L, LL),
+    leaves(R, LR),
+    append(LL, LR, LT).
+
+/**
+ * Collect the internal nodes of a binary tree
+ */
+internals(nil, []).
+internals(t(_, nil, nil), []):-!.
+internals(t(X, L, R), [X|IT]):-
+    internals(L, IL),
+    internals(R, IR),
+    append(IL, IR, IT).
+
+/**
+ * Collect the nodes at a given depth
+ */
+at_depth(nil, _, []).
+at_depth(t(X, _, _), 0, [X]):-!.
+at_depth(t(_, L, R), D, N):-
+    D1 is D - 1,
+    at_depth(L, D1, NL),
+    at_depth(R, D1, NR),
+    append(NL, NR, N).
+
+/**
+ * Construct a complete binary tree with N nodes
+ */
+complete_binary_tree(0, nil).
+complete_binary_tree(N, T):-
+    L is floor(log(N)/log(2)),
+    L1 is L - 1,
+    pow(2, L1, NN),
+    RN is N - 2 * NN - 1,
+    full_binary_tree(L, F),
+    add_to_full(F, RN, NN, T).
+
+/**
+ * Add RN nodes to a full tree F with
+ * NN nodes at the lowest level
+ */
+add_to_full(nil, _, _, t(x, nil, nil)):-!.
+add_to_full(t(x, L, R), RN, NN, t(x, NL, NR)):-
+    N is NN / 2,
+    (RN =< N ->
+        add_to_full(L, RN, N, NL),
+        NR = R
+    ;
+        add_to_full(L, N, N, NL),
+        NRN is RN - N,
+        add_to_full(R, NRN, N, NR)
+    ).
+
+/**
+ * Construct a full binary tree of a given height
+ */
+full_binary_tree(0, nil):-!.
+full_binary_tree(D, t(x, T, T)):-
+    D1 is D - 1,
+    full_binary_tree(D1, T).
+
+/**
+ * Layout a binary tree
+ * x(v) is position in inorder sequence
+ * y(v) is depth of v
+ */
+layout(nil, _, P, [], P):-!.
+layout(t(X, L, R), D, P, N, NNP):-
+    D1 is D + 1,
+    layout(L, D1, P, NL, NP),
+    NP1 is NP + 1,
+    layout(R, D1, NP1, NR, NNP),
+    append(NL, [[X, D, NP]|NR], N).
+
+/**
+ * Draw a tree based on above layout
+ */
+draw_tree(T):-
+    layout(T, 0, 0, L, _).
