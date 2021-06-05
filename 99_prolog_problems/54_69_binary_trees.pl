@@ -154,10 +154,46 @@ layout(t(X, L, R), D, P, N, NNP):-
     layout(L, D1, P, NL, NP),
     NP1 is NP + 1,
     layout(R, D1, NP1, NR, NNP),
-    append(NL, [[X, D, NP]|NR], N).
+    append(NL, [[D, NP, X]|NR], N).
 
 /**
  * Draw a tree based on above layout
  */
 draw_tree(T):-
-    layout(T, 0, 0, L, _).
+    layout(T, 0, 0, L, _),
+    sort(L, SL),
+    max_x(L, 0, M),
+    draw_tree(SL, M, 0, 0).
+draw_tree([], _, _, _).
+draw_tree([[Y,X,N]|R], M, X, Y):-
+    !,
+    write(N),
+    next(X, Y, M, NX, NY),
+    draw_tree(R, M, NX, NY).
+draw_tree(R, M, X, Y):-
+    next(X, Y, M, NX, NY),
+    (NY == Y ->
+        write(" ")
+    ;
+        nl),
+    draw_tree(R, M, NX, NY).
+
+/**
+ * Determine the maximum X value
+ */
+max_x([], M, M).
+max_x([[_, X, _] | R], M, NM):-
+    (X > M -> TM = X ; TM = M),
+    max_x(R, TM, NM).
+
+/**
+ * Get the next X and Y for a grid of given length
+ */
+next(X, Y, M, NX, NY):-
+    (X =< M -> 
+        (NX is X + 1, 
+         NY = Y)
+        ;
+        (NX = 0,
+         NY is Y + 1)
+    ).
