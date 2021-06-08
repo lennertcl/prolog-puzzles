@@ -62,3 +62,66 @@ has_won(P, B):-
     member(pos(P, 3, 1), B),
     member(pos(P, 2, 2), B),
     member(pos(P, 1, 3), B).
+
+
+% PLAYING THE GAME
+
+
+start_game():-
+    write("Enter your player (x or o) (x goes first): "),
+    read(P),
+    write_board([]),
+    play_game(x, P, []).
+
+play_game(_, _, B):-
+    has_won(P, B),
+    !,
+    write("Player "), write(P), write(" has won.").
+play_game(_, _, B):-
+    length(B, 9),
+    !,
+    write("Game ended in a draw.").
+play_game(P, P, B):-
+    !,
+    write("Enter your move pos(P, X, Y) where P is your player: "),
+    read(pos(P, X, Y)),
+    (legal_move(B, pos(P, X, Y)) ->
+        NB = [pos(P, X, Y) | B],
+        swap(P, NP)
+    ;
+        write("Illegal move"),
+        NB = B,
+        NP = P
+    ),
+    write_board(NB),
+    play_game(NP, P, NB).
+play_game(C, P, B):-
+    minimax(C, B, _, M),
+    NB = [M | B],
+    write_board(NB),
+    play_game(P, P, NB).
+
+write_board(B):-
+    write_line,
+    write("|"),
+    write_board(B, 1, 1).
+
+write_board(_, _, 4):-!.
+write_board(B, X, Y):-
+    (member(pos(P, X, Y), B) -> write(P) ; write("_")),
+    write("|"),
+    update(X, Y, NX, NY),
+    write_board(B, NX, NY).
+
+update(3, Y, 1, NY):-
+    !,
+    NY is Y + 1,
+    nl,
+    write_line,
+    (NY == 4 -> write("") ; write("|")).
+update(X, Y, NX, Y):-
+    NX is X + 1.
+
+
+write_line():-
+    write("-------"),nl.
